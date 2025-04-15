@@ -433,7 +433,13 @@ func (d *RequestData) verifyChallengeStateCookie(cookie *http.Cookie) (TokenChal
 }
 
 func (d *RequestData) verifyChallengeState() (state TokenChallengeMap, err error) {
-	cookies := d.r.CookiesNamed(d.cookieName)
+	var cookies []*http.Cookie
+	for _, cookie := range d.r.Cookies() {
+		if cookie.Name == d.cookieName {
+			cookies = append(cookies, cookie)
+		}
+	}
+
 	if len(cookies) == 0 {
 		return nil, http.ErrNoCookie
 	}

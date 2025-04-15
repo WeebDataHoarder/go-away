@@ -138,25 +138,12 @@ local Publish(mirror, registry, repo, secret, go, alpine, os, arch, trigger, pla
 #
 local containerArchitectures = ["linux/amd64", "linux/arm64", "linux/riscv64"];
 
-local alpineVersion = "3.21";
-local goVersion = "1.24";
+local alpineVersion = "3.20";
+local goVersion = "1.22";
 
 local mirror = "https://mirror.gcr.io";
 
 [
-    Build(mirror, goVersion, alpineVersion, "linux", "amd64") + {"trigger": {event: ["push", "tag"], }},
-    Build(mirror, goVersion, alpineVersion, "linux", "arm64") + {"trigger": {event: ["push", "tag"], }},
-
-    # Test PRs
-    Build(mirror, goVersion, alpineVersion, "linux", "amd64") + {"name": "test-pr", "trigger": {event: ["pull_request"], }},
-
-    # latest
-    Publish(mirror, "git.gammaspectra.live", "git.gammaspectra.live/git/go-away", "git", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-git"},
-    Publish(mirror, "codeberg.org", "codeberg.org/gone/go-away", "codeberg", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-codeberg"},
-    Publish(mirror, "ghcr.io", "ghcr.io/weebdatahoarder/go-away", "github", goVersion, alpineVersion, "linux", "amd64", {event: ["push"], branch: ["master"], }, containerArchitectures, {tags: ["latest"],}) + {name: "publish-latest-github"},
-
-    # modern
-    Publish(mirror, "git.gammaspectra.live", "git.gammaspectra.live/git/go-away", "git", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
-    Publish(mirror, "codeberg.org", "codeberg.org/gone/go-away", "codeberg", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
-    Publish(mirror, "ghcr.io", "ghcr.io/weebdatahoarder/go-away", "github", goVersion, alpineVersion, "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, containerArchitectures, {auto_tag: true,}),
+    Build(mirror, goVersion, alpineVersion, "linux", "amd64"),
+    Build(mirror, goVersion, alpineVersion, "linux", "arm64"),
 ]

@@ -39,7 +39,7 @@ func FetchTags(backend http.Handler, uri *url.URL, kinds ...string) (result []ht
 		return nil
 	}
 
-	for n := range node.Descendants() {
+	descendants(node, func(n *html.Node) {
 		if n.Type == html.ElementNode && slices.Contains(kinds, n.Data) {
 			result = append(result, html.Node{
 				Type:      n.Type,
@@ -49,7 +49,14 @@ func FetchTags(backend http.Handler, uri *url.URL, kinds ...string) (result []ht
 				Attr:      n.Attr,
 			})
 		}
-	}
+	})
 
 	return result
+}
+
+func descendants(n *html.Node, f func(n *html.Node)) {
+	f(n)
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		descendants(c, f)
+	}
 }

@@ -5,7 +5,7 @@ environment:
   GOOS: linux
   GOTOOLCHAIN: local
 kind: pipeline
-name: build-1.24-alpine3.21-amd64
+name: build-1.22-alpine3.20-amd64
 platform:
   arch: amd64
   os: linux
@@ -16,7 +16,7 @@ steps:
   - mkdir .bin
   - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
-  image: golang:1.24-alpine3.21
+  image: golang:1.22-alpine3.20
   mirror: https://mirror.gcr.io
   name: build
 - commands:
@@ -24,7 +24,7 @@ steps:
     --policy examples/forgejo.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-forgejo
 - commands:
@@ -32,7 +32,7 @@ steps:
     --policy examples/generic.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-generic
 - commands:
@@ -40,7 +40,7 @@ steps:
     --policy examples/spa.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-spa
 - commands:
@@ -51,7 +51,7 @@ steps:
     0
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: test-wasm-success
 - commands:
@@ -62,13 +62,9 @@ steps:
     1
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: test-wasm-fail
-trigger:
-  event:
-  - push
-  - tag
 type: docker
 ---
 environment:
@@ -77,7 +73,7 @@ environment:
   GOOS: linux
   GOTOOLCHAIN: local
 kind: pipeline
-name: build-1.24-alpine3.21-arm64
+name: build-1.22-alpine3.20-arm64
 platform:
   arch: arm64
   os: linux
@@ -88,7 +84,7 @@ steps:
   - mkdir .bin
   - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
-  image: golang:1.24-alpine3.21
+  image: golang:1.22-alpine3.20
   mirror: https://mirror.gcr.io
   name: build
 - commands:
@@ -96,7 +92,7 @@ steps:
     --policy examples/forgejo.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-forgejo
 - commands:
@@ -104,7 +100,7 @@ steps:
     --policy examples/generic.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-generic
 - commands:
@@ -112,7 +108,7 @@ steps:
     --policy examples/spa.yml --policy-snippets examples/snippets/
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: check-policy-spa
 - commands:
@@ -123,7 +119,7 @@ steps:
     0
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: test-wasm-success
 - commands:
@@ -134,375 +130,12 @@ steps:
     1
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   mirror: https://mirror.gcr.io
   name: test-wasm-fail
-trigger:
-  event:
-  - push
-  - tag
-type: docker
----
-environment:
-  CGO_ENABLED: "0"
-  GOARCH: amd64
-  GOOS: linux
-  GOTOOLCHAIN: local
-kind: pipeline
-name: test-pr
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - apk update
-  - apk add --no-cache git
-  - mkdir .bin
-  - go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away
-  - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
-  image: golang:1.24-alpine3.21
-  mirror: https://mirror.gcr.io
-  name: build
-- commands:
-  - ./.bin/go-away --check --slog-level DEBUG --backend example.com=http://127.0.0.1:80
-    --policy examples/forgejo.yml --policy-snippets examples/snippets/
-  depends_on:
-  - build
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: check-policy-forgejo
-- commands:
-  - ./.bin/go-away --check --slog-level DEBUG --backend example.com=http://127.0.0.1:80
-    --policy examples/generic.yml --policy-snippets examples/snippets/
-  depends_on:
-  - build
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: check-policy-generic
-- commands:
-  - ./.bin/go-away --check --slog-level DEBUG --backend example.com=http://127.0.0.1:80
-    --policy examples/spa.yml --policy-snippets examples/snippets/
-  depends_on:
-  - build
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: check-policy-spa
-- commands:
-  - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
-    -make-challenge ./embed/challenge/js-pow-sha256/test/make-challenge.json -make-challenge-out
-    ./embed/challenge/js-pow-sha256/test/make-challenge-out.json -verify-challenge
-    ./embed/challenge/js-pow-sha256/test/verify-challenge.json -verify-challenge-out
-    0
-  depends_on:
-  - build
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: test-wasm-success
-- commands:
-  - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
-    -make-challenge ./embed/challenge/js-pow-sha256/test/make-challenge.json -make-challenge-out
-    ./embed/challenge/js-pow-sha256/test/make-challenge-out.json -verify-challenge
-    ./embed/challenge/js-pow-sha256/test/verify-challenge-fail.json -verify-challenge-out
-    1
-  depends_on:
-  - build
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: test-wasm-fail
-trigger:
-  event:
-  - pull_request
-type: docker
----
-kind: pipeline
-name: publish-latest-git
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: git_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: git.gammaspectra.live
-    repo: git.gammaspectra.live/git/go-away
-    tags:
-    - latest
-    username:
-      from_secret: git_username
-trigger:
-  branch:
-  - master
-  event:
-  - push
-type: docker
----
-kind: pipeline
-name: publish-latest-codeberg
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: codeberg_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: codeberg.org
-    repo: codeberg.org/gone/go-away
-    tags:
-    - latest
-    username:
-      from_secret: codeberg_username
-trigger:
-  branch:
-  - master
-  event:
-  - push
-type: docker
----
-kind: pipeline
-name: publish-latest-github
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: github_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: ghcr.io
-    repo: ghcr.io/weebdatahoarder/go-away
-    tags:
-    - latest
-    username:
-      from_secret: github_username
-trigger:
-  branch:
-  - master
-  event:
-  - push
-type: docker
----
-kind: pipeline
-name: publish-1.24-alpine3.21-git
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag: true
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: git_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: git.gammaspectra.live
-    repo: git.gammaspectra.live/git/go-away
-    username:
-      from_secret: git_username
-trigger:
-  event:
-  - promote
-  - tag
-  target:
-  - production
-type: docker
----
-kind: pipeline
-name: publish-1.24-alpine3.21-codeberg
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag: true
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: codeberg_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: codeberg.org
-    repo: codeberg.org/gone/go-away
-    username:
-      from_secret: codeberg_username
-trigger:
-  event:
-  - promote
-  - tag
-  target:
-  - production
-type: docker
----
-kind: pipeline
-name: publish-1.24-alpine3.21-github
-platform:
-  arch: amd64
-  os: linux
-steps:
-- commands:
-  - echo '[registry."docker.io"]' > buildkitd.toml
-  - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
-  image: alpine:3.21
-  mirror: https://mirror.gcr.io
-  name: setup-buildkitd
-- environment:
-    DOCKER_BUILDKIT: "1"
-    LC_ALL: C
-    PLUGIN_BUILDER_CONFIG: buildkitd.toml
-    PLUGIN_BUILDER_DRIVER: docker-container
-    SOURCE_DATE_EPOCH: 0
-    TZ: UTC
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag: true
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    compress: true
-    mirror: https://mirror.gcr.io
-    password:
-      from_secret: github_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    - linux/riscv64
-    registry: ghcr.io
-    repo: ghcr.io/weebdatahoarder/go-away
-    username:
-      from_secret: github_username
-trigger:
-  event:
-  - promote
-  - tag
-  target:
-  - production
 type: docker
 ---
 kind: signature
-hmac: df53e4ea6f1c47df4d2a3f89b931b8513e83daa9c6c15baba2662d8112a721c8
+hmac: 00be8252a86e2c760c07c2baa6efa55d75f46fdc22299bb3feb1b199cc54af9e
 
 ...
