@@ -5,7 +5,7 @@ environment:
   GOOS: linux
   GOTOOLCHAIN: local
 kind: pipeline
-name: build-1.24-alpine3.21-amd64
+name: build-1.22-alpine3.20-amd64
 platform:
   arch: amd64
   os: linux
@@ -16,7 +16,7 @@ steps:
   - mkdir .bin
   - go build -v -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
-  image: golang:1.24-alpine3.21
+  image: golang:1.22-alpine3.20
   name: build
 - commands:
   - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
@@ -26,7 +26,7 @@ steps:
     0
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   name: test-wasm-success
 - commands:
   - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
@@ -36,7 +36,7 @@ steps:
     1
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   name: test-wasm-fail
 type: docker
 ---
@@ -46,7 +46,7 @@ environment:
   GOOS: linux
   GOTOOLCHAIN: local
 kind: pipeline
-name: build-1.24-alpine3.21-arm64
+name: build-1.22-alpine3.20-arm64
 platform:
   arch: arm64
   os: linux
@@ -57,7 +57,7 @@ steps:
   - mkdir .bin
   - go build -v -o ./.bin/go-away ./cmd/go-away
   - go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime
-  image: golang:1.24-alpine3.21
+  image: golang:1.22-alpine3.20
   name: build
 - commands:
   - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
@@ -67,7 +67,7 @@ steps:
     0
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   name: test-wasm-success
 - commands:
   - ./.bin/test-wasm-runtime -wasm ./embed/challenge/js-pow-sha256/runtime/runtime.wasm
@@ -77,83 +77,11 @@ steps:
     1
   depends_on:
   - build
-  image: alpine:3.21
+  image: alpine:3.20
   name: test-wasm-fail
 type: docker
 ---
-kind: pipeline
-name: publish-latest
-platform:
-  arch: amd64
-  os: linux
-steps:
-- environment:
-    DOCKER_BUILDKIT: "1"
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    builder_driver: docker-container
-    compress: true
-    password:
-      from_secret: git_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    registry: git.gammaspectra.live
-    repo: git.gammaspectra.live/git/go-away
-    tags:
-    - latest
-    username:
-      from_secret: git_username
-trigger:
-  branch:
-  - master
-  event:
-  - push
-type: docker
----
-kind: pipeline
-name: publish-1.24-alpine3.21
-platform:
-  arch: amd64
-  os: linux
-steps:
-- environment:
-    DOCKER_BUILDKIT: "1"
-  image: plugins/buildx
-  name: docker
-  privileged: true
-  settings:
-    auto_tag: true
-    auto_tag_suffix: alpine3.21
-    build_args:
-      from: alpine:3.21
-      from_builder: golang:1.24-alpine3.21
-    builder_driver: docker-container
-    compress: true
-    password:
-      from_secret: git_password
-    platform:
-    - linux/amd64
-    - linux/arm64
-    registry: git.gammaspectra.live
-    repo: git.gammaspectra.live/git/go-away
-    username:
-      from_secret: git_username
-trigger:
-  event:
-  - promote
-  - tag
-  target:
-  - production
-type: docker
----
 kind: signature
-hmac: 8ce795aa7b59f2a3290390df45a469d21b3e5b46230ac33ba0e24865607544d1
+hmac: 86b713999f4663f87be2637c70be316b9f89fbe2e905ae73802dc1357cd91596
 
 ...

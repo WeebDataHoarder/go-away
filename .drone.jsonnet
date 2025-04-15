@@ -94,12 +94,6 @@ local Publish(go, alpine, os, arch, trigger, platforms, extra) = {
 #
 
 [
-    Build("1.24", "3.21", "linux", "amd64"),
-    Build("1.24", "3.21", "linux", "arm64"),
-
-    # latest
-    Publish("1.24", "3.21", "linux", "amd64", {event: ["push"], branch: ["master"], }, ["linux/amd64", "linux/arm64"], {tags: ["latest"],}) + {name: "publish-latest"},
-
-    # modern
-    Publish("1.24", "3.21", "linux", "amd64", {event: ["promote", "tag"], target: ["production"], }, ["linux/amd64", "linux/arm64"], {auto_tag: true,}),
+    Build("1.22", "3.20", "linux", "amd64"),
+    Build("1.22", "3.20", "linux", "arm64"),
 ]
