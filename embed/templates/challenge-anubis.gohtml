@@ -11,7 +11,7 @@
         <meta name="{{ $key }}" content="{{ $value }}"/>
         {{end}}
     {{ end }}
-    {{ range .Tags }}
+    {{ range .HeaderTags }}
         {{ . }}
     {{ end }}
     <style>
@@ -155,7 +155,6 @@
         />
         {{if .Challenge }}
         <p id="status">Loading challenge <em>{{ .Challenge }}</em>...</p>
-        <script async type="module" src="{{ .Path }}/challenge/{{ .Challenge }}/challenge.mjs?cacheBust={{ .Random }}"></script>
         {{else if .Error}}
         <p id="status">Error: {{ .Error }}</p>
         {{else}}
@@ -202,6 +201,11 @@
             </p>
         </center>
     </footer>
+
+
+    {{ range .EndTags }}
+        {{ . }}
+    {{ end }}
 </main>
 </body>
 </html>

@@ -1,15 +1,15 @@
 package policy
 
+import (
+	"github.com/goccy/go-yaml/ast"
+	"time"
+)
+
 type Challenge struct {
 	Conditions []string `yaml:"conditions"`
-	Mode       string   `yaml:"mode"`
-	Asset      *string  `yaml:"asset,omitempty"`
-	Url        *string  `yaml:"url,omitempty"`
+	Runtime    string   `yaml:"runtime"`
 
-	Parameters map[string]string `json:"parameters,omitempty"`
-	Runtime    struct {
-		Mode        string  `yaml:"mode,omitempty"`
-		Asset       string  `yaml:"asset,omitempty"`
-		Probability float64 `yaml:"probability,omitempty"`
-	} `yaml:"runtime"`
+	Duration time.Duration `yaml:"duration"`
+
+	Parameters ast.Node `yaml:"parameters,omitempty"`
 }

@@ -13,14 +13,15 @@ For example, this allows verifying the user cookies against the backend to have 
 Example on Forgejo, checks that current user is authenticated:
 ```yaml
   http-cookie-check:
-    mode: http
-    url: http://forgejo:3000/user/stopwatches
-    # url: http://forgejo:3000/repo/search
-    # url: http://forgejo:3000/notifications/new
+    runtime: http
     parameters:
+      http-url: http://forgejo:3000/user/stopwatches
+      # http-url: http://forgejo:3000/repo/search
+      # http-url: http://forgejo:3000/notifications/new
       http-method: GET
       http-cookie: i_like_gitea
       http-code: 200
+      verify-probability: 0.1
 ```
 
 ### preload-link
@@ -35,16 +36,9 @@ Example:
 ```yaml
   self-preload-link:
     condition: '"Sec-Fetch-Mode" in headers && headers["Sec-Fetch-Mode"] == "navigate"'
-    mode: "preload-link"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "preload-link"
     parameters:
       preload-early-hint-deadline: 3s
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
 ```
 
 ## Non-JavaScript
@@ -76,20 +70,6 @@ Requires HTTP and HTML response parsing and logic, displays challenge site.
 
 Servers a challenge page with a linked resource that is loaded by the browser, which solves the challenge. Page refreshes a few seconds later via [Refresh](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Refresh).
 
-Example:
-```yaml
-  self-resource-load:
-    mode: "resource-load"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
-    parameters:
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
-```
-
 ## Custom JavaScript
 
 ### js-pow-sha256
@@ -101,18 +81,18 @@ Has the user solve a Proof of Work using SHA256 hashes, with configurable diffic
 Example:
 ```yaml
   js-pow-sha256:
-    # Asset must be under challenges/{name}/static/{asset}
-    # Other files here will be available under that path
-    mode: js
-    asset: load.mjs
+    runtime: js
     parameters:
-      # difficulty is number of bits that must be set to 0 from start
-      # Anubis challenge difficulty 5 becomes 5 * 8 = 20
-      difficulty: 20
-    runtime:
-      mode: wasm
-      # Verify must be under challenges/{name}/runtime/{asset}
-      asset: runtime.wasm
-      probability: 0.02
+      # specifies the folder path that assets are under
+      # can be either embedded or external path
+      # defaults to name of challenge
+      path: "js-pow-sha256"
+      # needs to be under static folder
+      js-loader: load.mjs
+      # needs to be under runtime folder
+      wasm-runtime: runtime.wasm
+      wasm-runtime-settings:
+        difficulty: 20
+      verify-probability: 0.02
 ```
 

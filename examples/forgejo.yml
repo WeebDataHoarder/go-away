@@ -19,42 +19,42 @@ networks:
     # AS21859
     - url: https://raw.githubusercontent.com/ipverse/asn-ip/refs/heads/master/as/21859/aggregated.json
       jq-path: '.subnets.ipv4[], .subnets.ipv6[]'
-  aws-cloud:
-    - url: https://ip-ranges.amazonaws.com/ip-ranges.json
-      jq-path: '(.prefixes[] | select(has("ip_prefix")) | .ip_prefix), (.prefixes[] | select(has("ipv6_prefix")) | .ipv6_prefix)'
-  google-cloud:
-    - url: https://www.gstatic.com/ipranges/cloud.json
-      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
-  oracle-cloud:
-    - url: https://docs.oracle.com/en-us/iaas/tools/public_ip_ranges.json
-      jq-path: '.regions[] | .cidrs[] | .cidr'
-  azure-cloud:
-    # todo: https://www.microsoft.com/en-us/download/details.aspx?id=56519 does not provide direct JSON
-    - url: https://raw.githubusercontent.com/femueller/cloud-ip-ranges/refs/heads/master/microsoft-azure-ip-ranges.json
-      jq-path: '.values[] | .properties.addressPrefixes[]'
-
-  digitalocean:
-    - url: https://www.digitalocean.com/geo/google.csv
-      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
-  linode:
-    - url: https://geoip.linode.com/
-      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
-  vultr:
-    - url: "https://geofeed.constant.com/?json"
-      jq-path: '.subnets[] | .ip_prefix'
-  cloudflare:
-    - url: https://www.cloudflare.com/ips-v4
-      regex: "(?P<prefix>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+)"
-    - url: https://www.cloudflare.com/ips-v6
-      regex: "(?P<prefix>[0-9a-f:]+::/[0-9]+)"
-
-  icloud-private-relay:
-    - url: https://mask-api.icloud.com/egress-ip-ranges.csv
-      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
-  tunnelbroker-relay:
-    # HE Tunnelbroker
-    - url: https://tunnelbroker.net/export/google
-      regex: "(?P<prefix>([0-9a-f:]+::)/[0-9]+),"
+#  aws-cloud:
+#    - url: https://ip-ranges.amazonaws.com/ip-ranges.json
+#      jq-path: '(.prefixes[] | select(has("ip_prefix")) | .ip_prefix), (.prefixes[] | select(has("ipv6_prefix")) | .ipv6_prefix)'
+#  google-cloud:
+#    - url: https://www.gstatic.com/ipranges/cloud.json
+#      jq-path: '(.prefixes[] | select(has("ipv4Prefix")) | .ipv4Prefix), (.prefixes[] | select(has("ipv6Prefix")) | .ipv6Prefix)'
+#  oracle-cloud:
+#    - url: https://docs.oracle.com/en-us/iaas/tools/public_ip_ranges.json
+#      jq-path: '.regions[] | .cidrs[] | .cidr'
+#  azure-cloud:
+#    # todo: https://www.microsoft.com/en-us/download/details.aspx?id=56519 does not provide direct JSON
+#    - url: https://raw.githubusercontent.com/femueller/cloud-ip-ranges/refs/heads/master/microsoft-azure-ip-ranges.json
+#      jq-path: '.values[] | .properties.addressPrefixes[]'
+#
+#  digitalocean:
+#    - url: https://www.digitalocean.com/geo/google.csv
+#      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
+#  linode:
+#    - url: https://geoip.linode.com/
+#      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
+#  vultr:
+#    - url: "https://geofeed.constant.com/?json"
+#      jq-path: '.subnets[] | .ip_prefix'
+#  cloudflare:
+#    - url: https://www.cloudflare.com/ips-v4
+#      regex: "(?P<prefix>[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/[0-9]+)"
+#    - url: https://www.cloudflare.com/ips-v6
+#      regex: "(?P<prefix>[0-9a-f:]+::/[0-9]+)"
+#
+#  icloud-private-relay:
+#    - url: https://mask-api.icloud.com/egress-ip-ranges.csv
+#      regex: "(?P<prefix>(([0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9a-f:]+::))/[0-9]+),"
+#  tunnelbroker-relay:
+#    # HE Tunnelbroker
+#    - url: https://tunnelbroker.net/export/google
+#      regex: "(?P<prefix>([0-9a-f:]+::)/[0-9]+),"
 
 
   googlebot:
@@ -95,77 +95,65 @@ networks:
 
 challenges:
   js-pow-sha256:
-    # Asset must be under challenges/{name}/static/{asset}
-    # Other files here will be available under that path
-    mode: js
-    asset: load.mjs
+    runtime: js
     parameters:
-      difficulty: 20
-    runtime:
-      mode: wasm
-      # Verify must be under challenges/{name}/runtime/{asset}
-      asset: runtime.wasm
-      probability: 0.02
+      # specifies the folder path that assets are under
+      # can be either embedded or external path
+      # defaults to name of challenge
+      path: "js-pow-sha256"
+      # needs to be under static folder
+      js-loader: load.mjs
+      # needs to be under runtime folder
+      wasm-runtime: runtime.wasm
+      wasm-runtime-settings:
+        difficulty: 20
+      verify-probability: 0.02
 
   # Challenges with a cookie, self redirect (non-JS, requires HTTP parsing)
   self-cookie:
-    mode: "cookie"
-
+    runtime: "cookie"
 
   # Challenges with a redirect via Link header with rel=preload and early hints (non-JS, requires HTTP parsing, fetching and logic)
   # Works on HTTP/2 and above!
   self-preload-link:
     condition: '"Sec-Fetch-Mode" in headers && headers["Sec-Fetch-Mode"] == "navigate"'
-    mode: "preload-link"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "preload-link"
     parameters:
       preload-early-hint-deadline: 3s
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
 
   # Challenges with a redirect via Refresh header (non-JS, requires HTTP parsing and logic)
   self-header-refresh:
-    mode: "header-refresh"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "refresh"
+    parameters:
+      refresh-via: "header"
 
   # Challenges with a redirect via Refresh meta (non-JS, requires HTML parsing and logic)
   self-meta-refresh:
-    mode: "meta-refresh"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "refresh"
+    parameters:
+      refresh-via: "meta"
 
   # Challenges with loading a random CSS or image document (non-JS, requires HTML parsing and logic)
   self-resource-load:
-    mode: "resource-load"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
-    parameters:
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
-
+    runtime: "resource-load"
 
   # Verifies the existence of a cookie and confirms it against some backend request, passing the entire client cookie contents
   http-cookie-check:
-    mode: http
-    url: http://forgejo:3000/user/stopwatches
-    # url: http://forgejo:3000/repo/search
-    # url: http://forgejo:3000/notifications/new
+    runtime: http
     parameters:
+      http-url: http://forgejo:3000/user/stopwatches
+      # http-url: http://forgejo:3000/repo/search
+      # http-url: http://forgejo:3000/notifications/new
       http-method: GET
       http-cookie: i_like_gitea
       http-code: 200
+      verify-probability: 0.1
+
+  dnsbl:
+    runtime: dnsbl
+    parameters:
+      dnsbl-decay: 1h
+      dnsbl-timeout: 1s
 
 conditions:
   # Conditions will get replaced on rules AST when found as ($condition-name)
@@ -243,6 +231,7 @@ conditions:
     - 'userAgent.startsWith("Opera/")'
     #- 'userAgent.matches("Gecko/(201[0-9]|200[0-9])")'
     - 'userAgent.matches("^Mozilla/[1-4]")'
+
   is-heavy-resource:
     - 'path.startsWith("/explore/")'
     - 'path.matches("^/[^/]+/[^/]+/src/commit/")'
@@ -272,7 +261,7 @@ rules:
   - name: undesired-networks
     conditions:
       - 'inNetwork("huawei-cloud", remoteAddress) || inNetwork("alibaba-cloud", remoteAddress) || inNetwork("zenlayer-inc", remoteAddress)'
-    action: poison
+    action: drop
 
   - name: undesired-crawlers
     conditions:
@@ -296,7 +285,7 @@ rules:
       - 'userAgent.contains("Amazonbot") || userAgent.contains("Google-Extended") || userAgent.contains("PanguBot") || userAgent.contains("AI2Bot") || userAgent.contains("Diffbot") || userAgent.contains("cohere-training-data-crawler") || userAgent.contains("Applebot-Extended")'
       # SEO / Ads and marketing
       - 'userAgent.contains("BLEXBot")'
-    action: poison
+    action: drop
 
   - name: unknown-crawlers
     conditions:
@@ -305,22 +294,22 @@ rules:
     action: deny
 
   # check a sequence of challenges for non logged in
-  - name: suspicious-crawlers/0
+  - name: suspicious-crawlers
     conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [js-pow-sha256, http-cookie-check]
-  - name: suspicious-crawlers/1
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-preload-link]
-  - name: suspicious-crawlers/2
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-header-refresh]
-  - name: suspicious-crawlers/3
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-resource-load]
+    action: none
+    children:
+      - name: 0
+        action: check
+        settings:
+          challenges: [js-pow-sha256, http-cookie-check]
+      - name: 1
+        action: check
+        settings:
+          challenges: [self-preload-link, self-resource-load]
+      - name: 2
+        action: check
+        settings:
+          challenges: [self-header-refresh]
 
   - name: always-pow-challenge
     conditions:
@@ -337,7 +326,8 @@ rules:
       # Match archive downloads from browsers and not tools
       - 'path.matches("^/[^/]+/[^/]+/archive/.*\\.(bundle|zip|tar\\.gz)") && ($is-generic-browser)'
     action: challenge
-    challenges: [ js-pow-sha256 ]
+    settings:
+      challenges: [ js-pow-sha256 ]
 
   - name: allow-git-operations
     conditions:
@@ -407,18 +397,25 @@ rules:
     action: pass
 
   # check a sequence of challenges
-  - name: heavy-operations/0
-    action: check
-    challenges: [self-preload-link, self-header-refresh, js-pow-sha256, http-cookie-check]
+  - name: heavy-operations
     conditions: ['($is-heavy-resource)']
-  - name: heavy-operations/1
-    action: check
-    challenges: [self-resource-load, js-pow-sha256, http-cookie-check]
-    conditions: ['($is-heavy-resource)']
+    action: none
+    children:
+      - name: 0
+        action: check
+        settings:
+          challenges: [self-preload-link, self-header-refresh, js-pow-sha256, http-cookie-check]
+      - name: 1
+        action: check
+        settings:
+          challenges: [ self-resource-load, js-pow-sha256, http-cookie-check ]
+    settings:
+      challenges: [self-preload-link, self-header-refresh, js-pow-sha256, http-cookie-check]
 
   - name: standard-bots
     action: check
-    challenges: [self-meta-refresh, self-resource-load]
+    settings:
+      challenges: [self-meta-refresh, self-resource-load]
     conditions:
       - '($is-generic-robot-ua)'
 
@@ -433,15 +430,20 @@ rules:
     action: pass
 
   # check DNSBL and serve harder challenges
+  # todo: make this specific to score
   - name: undesired-dnsbl
-    conditions:
-      - 'inDNSBL(remoteAddress)'
     action: check
-    challenges: [js-pow-sha256, http-cookie-check]
+    settings:
+      challenges: [dnsbl]
+      # if DNSBL fails, check additional challenges
+      fail: check
+      fail-settings:
+        challenges: [js-pow-sha256, http-cookie-check]
 
   - name: suspicious-fetchers
     action: check
-    challenges: [js-pow-sha256]
+    settings:
+      challenges: [js-pow-sha256]
     conditions:
       - 'userAgent.contains("facebookexternalhit/") || userAgent.contains("facebookcatalog/")'
 
@@ -453,19 +455,22 @@ rules:
 
   - name: plaintext-browser
     action: challenge
-    challenges: [http-cookie-check, self-meta-refresh, self-cookie]
+    settings:
+      challenges: [http-cookie-check, self-meta-refresh, self-cookie]
     conditions:
       - 'userAgent.startsWith("Lynx/")'
 
   - name: standard-tools
     action: challenge
-    challenges: [self-cookie]
+    settings:
+      challenges: [self-cookie]
     conditions:
       - '($is-tool-ua)'
       - '!($is-generic-browser)'
 
   - name: standard-browser
     action: challenge
-    challenges: [http-cookie-check, self-preload-link, self-meta-refresh, self-resource-load, js-pow-sha256]
+    settings:
+      challenges: [http-cookie-check, self-preload-link, self-meta-refresh, self-resource-load, js-pow-sha256]
     conditions:
       - '($is-generic-browser)'

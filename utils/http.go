@@ -2,7 +2,9 @@ package utils
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net"
@@ -78,4 +80,47 @@ func MakeReverseProxy(target string) (*httputil.ReverseProxy, error) {
 	rp.Transport = transport
 
 	return rp, nil
+}
+
+func GetRequestScheme(r *http.Request) string {
+	if proto := r.Header.Get("X-Forwarded-Proto"); proto == "http" || proto == "https" {
+		return proto
+	}
+
+	if r.TLS != nil {
+		return "https"
+	}
+
+	return "http"
+}
+
+func GetRequestAddress(r *http.Request, clientHeader string) net.IP {
+	var ipStr string
+	if clientHeader != "" {
+		ipStr = r.Header.Get(clientHeader)
+	}
+	if ipStr != "" {
+		// handle X-Forwarded-For
+		ipStr = strings.Split(ipStr, ",")[0]
+	}
+
+	// fallback
+	if ipStr == "" {
+		ipStr, _, _ = net.SplitHostPort(r.RemoteAddr)
+	}
+	ipStr = strings.Trim(ipStr, "[]")
+	return net.ParseIP(ipStr)
+}
+
+func CacheBust() string {
+	return cacheBust
+}
+
+var cacheBust string
+
+func init() {
+
+	buf := make([]byte, 16)
+	_, _ = rand.Read(buf)
+	cacheBust = base64.RawURLEncoding.EncodeToString(buf)
 }

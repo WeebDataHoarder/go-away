@@ -17,7 +17,7 @@
             <meta name="{{ $key }}" content="{{ $value }}"/>
         {{end}}
     {{ end }}
-    {{ range .Tags }}
+    {{ range .HeaderTags }}
         {{ . }}
     {{ end }}
 
@@ -62,7 +62,6 @@
 
                     {{if .Challenge }}
                     <h3 id="status">Loading challenge <em>{{ .Challenge }}</em>...</h3>
-                    <script async type="module" src="{{ .Path }}/challenge/{{ .Challenge }}/challenge.mjs?cacheBust={{ .Random }}"></script>
                     {{else if .Error}}
                     <h3 id="status">Error: {{ .Error }}</h3>
                     {{else}}
@@ -109,6 +108,10 @@
         Protected by <a href="https://git.gammaspectra.live/git/go-away">go-away</a> :: Request Id <em>{{ .Id }}</em>
     </div>
 </footer>
+
+{{ range .EndTags }}
+    {{ . }}
+{{ end }}
 
 </body>
 </html>

@@ -12,10 +12,10 @@ import (
 	"git.gammaspectra.live/git/go-away/lib"
 	"git.gammaspectra.live/git/go-away/lib/policy"
 	"git.gammaspectra.live/git/go-away/utils"
+	"github.com/goccy/go-yaml"
 	"github.com/pires/go-proxyproto"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
-	"gopkg.in/yaml.v3"
 	"log"
 	"log/slog"
 	"maps"
@@ -133,8 +133,6 @@ func main() {
 
 	clientIpHeader := flag.String("client-ip-header", "", "Client HTTP header to fetch their IP address from (X-Real-Ip, X-Client-Ip, X-Forwarded-For, Cf-Connecting-Ip, etc.)")
 	backendIpHeader := flag.String("backend-ip-header", "", "Backend HTTP header to set the client IP address from, if empty defaults to leaving Client header alone (X-Real-Ip, X-Client-Ip, X-Forwarded-For, Cf-Connecting-Ip, etc.)")
-
-	dnsbl := flag.String("dnsbl", "dnsbl.dronebl.org", "blocklist for DNSBL (default DroneBL)")
 
 	cachePath := flag.String("cache", path.Join(os.TempDir(), "go_away_cache"), "path to temporary cache directory")
 
@@ -318,7 +316,7 @@ func main() {
 		}()
 	}
 
-	settings := lib.StateSettings{
+	settings := policy.Settings{
 		Backends:               createdBackends,
 		Debug:                  *debugMode,
 		PackageName:            *packageName,
@@ -327,10 +325,7 @@ func main() {
 		PrivateKeySeed:         seed,
 		ClientIpHeader:         *clientIpHeader,
 		BackendIpHeader:        *backendIpHeader,
-	}
-
-	if *dnsbl != "" {
-		settings.DNSBL = utils.NewDNSBL(*dnsbl, net.DefaultResolver)
+		ChallengeResponseCode:  http.StatusTeapot,
 	}
 
 	state, err := lib.NewState(p, settings)

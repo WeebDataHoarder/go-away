@@ -44,65 +44,50 @@ networks:
 
 challenges:
   js-pow-sha256:
-    # Asset must be under challenges/{name}/static/{asset}
-    # Other files here will be available under that path
-    mode: js
-    asset: load.mjs
+    runtime: js
     parameters:
-      difficulty: 15
-    runtime:
-      mode: wasm
-      # Verify must be under challenges/{name}/runtime/{asset}
-      asset: runtime.wasm
-      probability: 0.02
+      # needs to be under static folder
+      js-loader: load.mjs
+      # needs to be under runtime folder
+      wasm-runtime: runtime.wasm
+      wasm-runtime-settings:
+        difficulty: 15
+      verify-probability: 0.02
 
   # Challenges with a cookie, self redirect (non-JS, requires HTTP parsing)
   self-cookie:
-    mode: "cookie"
+    runtime: "cookie"
 
 
   # Challenges with a redirect via Link header with rel=preload and early hints (non-JS, requires HTTP parsing, fetching and logic)
   # Works on HTTP/2 and above!
   self-preload-link:
     condition: '"Sec-Fetch-Mode" in headers && headers["Sec-Fetch-Mode"] == "navigate"'
-    mode: "preload-link"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "preload-link"
     parameters:
       preload-early-hint-deadline: 3s
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
 
   # Challenges with a redirect via Refresh header (non-JS, requires HTTP parsing and logic)
   self-header-refresh:
-    mode: "header-refresh"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "refresh"
+    parameters:
+      refresh-via: "header"
 
   # Challenges with a redirect via Refresh meta (non-JS, requires HTML parsing and logic)
   self-meta-refresh:
-    mode: "meta-refresh"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "refresh"
+    parameters:
+      refresh-via: "meta"
 
   # Challenges with loading a random CSS or image document (non-JS, requires HTML parsing and logic)
   self-resource-load:
-    mode: "resource-load"
-    runtime:
-      # verifies that result = key
-      mode: "key"
-      probability: 0.1
+    runtime: "resource-load"
+
+  dnsbl:
+    runtime: dnsbl
     parameters:
-      key-code: 200
-      key-mime: text/css
-      key-content: ""
+      dnsbl-decay: 1h
+      dnsbl-timeout: 1s
 
 conditions:
   # Conditions will get replaced on rules AST when found as ($condition-name)
@@ -198,7 +183,7 @@ rules:
       - 'userAgent.contains("Amazonbot") || userAgent.contains("Google-Extended") || userAgent.contains("PanguBot") || userAgent.contains("AI2Bot") || userAgent.contains("Diffbot") || userAgent.contains("cohere-training-data-crawler") || userAgent.contains("Applebot-Extended")'
       # SEO / Ads and marketing
       - 'userAgent.contains("BLEXBot")'
-    action: deny
+    action: drop
 
   - name: unknown-crawlers
     conditions:
@@ -207,22 +192,22 @@ rules:
     action: deny
 
   # check a sequence of challenges
-  - name: suspicious-crawlers/0
+  - name: suspicious-crawlers
     conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [js-pow-sha256]
-  - name: suspicious-crawlers/1
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-preload-link]
-  - name: suspicious-crawlers/2
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-header-refresh]
-  - name: suspicious-crawlers/3
-    conditions: ['($is-suspicious-crawler)']
-    action: check
-    challenges: [self-resource-load]
+    action: none
+    children:
+      - name: 0
+        action: check
+        settings:
+          challenges: [js-pow-sha256]
+      - name: 1
+        action: check
+        settings:
+          challenges: [self-preload-link, self-resource-load]
+      - name: 2
+        action: check
+        settings:
+          challenges: [self-header-refresh]
 
   - name: desired-crawlers
     conditions:
@@ -240,15 +225,20 @@ rules:
     action: pass
 
   # check DNSBL and serve harder challenges
+  # todo: make this specific to score
   - name: undesired-dnsbl
-    conditions:
-      - 'inDNSBL(remoteAddress)'
     action: check
-    challenges: [js-pow-sha256]
+    settings:
+      challenges: [dnsbl]
+      # if DNSBL fails, check additional challenges
+      fail: check
+      fail-settings:
+        challenges: [js-pow-sha256]
 
   - name: suspicious-fetchers
     action: check
-    challenges: [js-pow-sha256]
+    settings:
+      challenges: [js-pow-sha256]
     conditions:
       - 'userAgent.contains("facebookexternalhit/") || userAgent.contains("facebookcatalog/")'
 
@@ -260,13 +250,15 @@ rules:
 
   - name: plaintext-browser
     action: challenge
-    challenges: [self-meta-refresh, self-cookie]
+    settings:
+      challenges: [self-meta-refresh, self-cookie]
     conditions:
       - 'userAgent.startsWith("Lynx/")'
 
   - name: standard-tools
     action: challenge
-    challenges: [self-cookie]
+    settings:
+      challenges: [self-cookie]
     conditions:
       - '($is-generic-robot-ua)'
       - '($is-tool-ua)'
@@ -274,6 +266,7 @@ rules:
 
   - name: standard-browser
     action: challenge
-    challenges: [self-preload-link, self-meta-refresh, self-resource-load, js-pow-sha256]
+    settings:
+      challenges: [self-preload-link, self-meta-refresh, self-resource-load, js-pow-sha256]
     conditions:
       - '($is-generic-browser)'

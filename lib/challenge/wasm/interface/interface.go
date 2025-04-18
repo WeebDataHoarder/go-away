@@ -111,6 +111,7 @@ type VerifyChallengeInput struct {
 
 type VerifyChallengeOutput uint64
 
+// TODO: expand allowed values
 const (
 	VerifyChallengeOutputOK = VerifyChallengeOutput(iota)
 	VerifyChallengeOutputFailed

@@ -94,11 +94,13 @@ func (r *Runner) Compile(key string, binary []byte) error {
 	return nil
 }
 
-func (r *Runner) Close() {
+func (r *Runner) Close() error {
 	for _, module := range r.modules {
-		module.Close(r.context)
+		if err := module.Close(r.context); err != nil {
+			return err
+		}
 	}
-	r.runtime.Close(r.context)
+	return r.runtime.Close(r.context)
 }
 
 var ErrModuleNotFound = errors.New("module not found")
