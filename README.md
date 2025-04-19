@@ -154,19 +154,6 @@ This can be targeted on conditions or other application logic.
 
 Read more about [JA3](https://medium.com/salesforce-engineering/tls-fingerprinting-with-ja3-and-ja3s-247362855967) and [JA4](https://github.com/FoxIO-LLC/ja4/blob/main/technical_details/README.md).
 
-
-### DNSBL
-
-You can configure a [DNSBL (Domain Name System blocklist)](https://en.wikipedia.org/wiki/Domain_Name_System_blocklist) to be queried on rules and conditions.
-
-This allows you to serve harder or different challenges to higher risk clients, or block them from specific sections.
-
-Only rules that match DNSBL will cause a query to be sent, meaning the bulk of requests will not be sent to this service upstream.
-
-Results will be temporarily cached
-
-By default, [DroneBL](https://dronebl.org/) is used.
-
 ### Network range and automated filtering
 
 Some specific search spiders do follow _robots.txt_ and are well behaved. However, many actors can reuse user agents, so the origin network ranges must be checked.
@@ -290,16 +277,16 @@ go-away offers a highly configurable set of challenges and rules that you can ad
 go-away has most of the desired features from the original checklist that was made in its development. 
 However, a few points are left before go-away can be called v1.0.0:
 
-* [ ] Several parts of the code are going through a refactor, which won't impact end users or operators.
+* [x] Several parts of the code are going through a refactor, which won't impact end users or operators.
 * [ ] Documentation is lacking and a more extensive one with inline example is in the works.
-* [ ] Policy file syntax is going to stay mostly unchanged, except in the challenges definition section.
+* [x] Policy file syntax is going to stay mostly unchanged, except in the challenges definition section.
 * [ ] Allow users to pick fallback challenges if any fail, specially with custom ones.
 * [ ] Replace Anubis-like default template with own one.
 * [ ] Define strings and multi-language support for quick modification by operators without custom templates.
 * [ ] Have highly tested paths that match examples.
 * [ ] Caching of temporary fetches, for example, network ranges.
 * [ ] Allow live and dynamic policy reloading.
-* [ ] Multiple domains / subdomains -> one backend handling, CEL rules for backends
+* [x] Multiple domains / subdomains -> one backend handling, CEL rules for backends
 * [ ] Merge all rules and conditions into one large AST for higher performance.
 * [ ] Explore exposing a module for direct Caddy usage.
 * [ ] More defined way of picking HTTP/HTTP(s) listeners and certificates.

@@ -41,6 +41,39 @@ Example:
       preload-early-hint-deadline: 3s
 ```
 
+### dnsbl
+
+You can configure a [DNSBL (Domain Name System blocklist)](https://en.wikipedia.org/wiki/Domain_Name_System_blocklist) to be queried.
+
+This allows you to serve harder or different challenges to higher risk clients, or block them from specific sections.
+
+Only rules that match a DNSBL challenge will cause a query to be sent, meaning the bulk of requests will not be sent to this service upstream.
+
+Results will be temporarily cached.
+
+By default, [DroneBL](https://dronebl.org/) is used.
+
+Example challenge definition and rule:
+```yaml
+challenges:
+  dnsbl:
+  runtime: dnsbl
+  parameters:
+    dnsbl-decay: 1h
+    dnsbl-timeout: 1s
+    
+rules:
+  # check DNSBL and serve harder challenges
+  - name: undesired-dnsbl
+    action: check
+    settings:
+      challenges: [dnsbl]
+      # if DNSBL fails, check additional challenges
+      fail: check
+      fail-settings:
+        challenges: [js-pow-sha256]
+```
+
 ## Non-JavaScript
 
 ### cookie
