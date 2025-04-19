@@ -408,6 +408,7 @@ services:
 
 ## Other Similar Projects
 * [Anubis](https://anubis.techaro.lol/): Proxy that uses JavaScript proof of work to weight request based on rules [[source]](https://github.com/TecharoHQ/anubis)
+* [powxy](https://sr.ht/~runxiyu/powxy/): Powxy is a reverse proxy that protects your upstream service by challenging clients with SHA-256 proof-of-work. [[source](https://git.sr.ht/~runxiyu/powxy)]
 * [anticrawl](https://flak.tedunangst.com/post/anticrawl): Go http handler / proxy for regex based rules [[source]](https://humungus.tedunangst.com/r/anticrawl)
 
 
