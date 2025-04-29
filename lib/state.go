@@ -175,15 +175,21 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 				}
 				return prefixes, nil
 			}()
+			if err != nil {
+				if e.Url != nil {
+					slog.Error("error loading network list", "network", k, "url", *e.Url, "error", err)
+				} else if e.ASN != nil {
+					slog.Error("error loading ASN", "network", k, "asn", *e.ASN, "error", err)
+				} else {
+					slog.Error("error loading list", "network", k, "error", err)
+				}
+				continue
+			}
 			for _, prefix := range prefixes {
 				err = ranger.Insert(cidranger.NewBasicRangerEntry(prefix))
 				if err != nil {
 					return nil, fmt.Errorf("networks %s: error inserting prefix %s: %v", k, prefix.String(), err)
 				}
-			}
-			if err != nil {
-				slog.Error("error loading network list", "network", k, "url", *e.Url, "error", err)
-				continue
 			}
 		}
 
