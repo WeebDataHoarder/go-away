@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"git.gammaspectra.live/git/go-away/lib/challenge"
 	"git.gammaspectra.live/git/go-away/lib/policy"
@@ -52,8 +53,8 @@ type State struct {
 	Mux *http.ServeMux
 }
 
-func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSettings) (handler http.Handler, err error) {
-	state := new(State)
+func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSettings) (state *State, err error) {
+	state = new(State)
 	state.close = make(chan struct{})
 	state.settings = settings
 	state.opt = opt
@@ -263,4 +264,14 @@ func NewState(p policy.Policy, opt settings.Settings, settings policy.StateSetti
 	}()
 
 	return state, nil
+}
+
+func (state *State) Close() error {
+	select {
+	case <-state.close:
+		return errors.New("already closed")
+	default:
+		close(state.close)
+	}
+	return nil
 }

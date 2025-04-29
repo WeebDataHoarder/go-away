@@ -2,6 +2,7 @@ package utils
 
 import (
 	"golang.org/x/net/html"
+	"io"
 	"mime"
 	"net/http"
 	"net/http/httptest"
@@ -32,8 +33,12 @@ func FetchTags(backend http.Handler, uri *url.URL, kind string) (result []html.N
 		return nil
 	}
 
+	return FetchTagsFromReader(response.Body, kind)
+}
+
+func FetchTagsFromReader(r io.Reader, kind string) (result []html.Node) {
 	//TODO: handle non UTF-8 documents
-	node, err := html.ParseWithOptions(response.Body, html.ParseOptionEnableScripting(false))
+	node, err := html.ParseWithOptions(r, html.ParseOptionEnableScripting(false))
 	if err != nil {
 		return nil
 	}

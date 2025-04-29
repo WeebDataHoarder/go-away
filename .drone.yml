@@ -3,6 +3,7 @@ environment:
   CGO_ENABLED: "0"
   GOARCH: amd64
   GOOS: linux
+  GORACE: halt_on_error=1
   GOTOOLCHAIN: local
 kind: pipeline
 name: build-1.24-alpine3.21-amd64
@@ -19,6 +20,13 @@ steps:
   image: golang:1.24-alpine3.21
   mirror: https://mirror.gcr.io
   name: build
+- commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
 - commands:
   - ./.bin/go-away --check --slog-level DEBUG --backend example.com=http://127.0.0.1:80
     --policy examples/forgejo.yml --policy-snippets examples/snippets/
@@ -71,6 +79,7 @@ environment:
   CGO_ENABLED: "0"
   GOARCH: arm64
   GOOS: linux
+  GORACE: halt_on_error=1
   GOTOOLCHAIN: local
 kind: pipeline
 name: build-1.24-alpine3.21-arm64
@@ -87,6 +96,13 @@ steps:
   image: golang:1.24-alpine3.21
   mirror: https://mirror.gcr.io
   name: build
+- commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
 - commands:
   - ./.bin/go-away --check --slog-level DEBUG --backend example.com=http://127.0.0.1:80
     --policy examples/forgejo.yml --policy-snippets examples/snippets/
@@ -142,6 +158,13 @@ platform:
   os: linux
 steps:
 - commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
+- commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
   image: alpine:3.21
@@ -189,6 +212,13 @@ platform:
   arch: amd64
   os: linux
 steps:
+- commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
 - commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
@@ -238,6 +268,13 @@ platform:
   os: linux
 steps:
 - commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
+- commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
   image: alpine:3.21
@@ -285,6 +322,13 @@ platform:
   arch: amd64
   os: linux
 steps:
+- commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
 - commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
@@ -334,6 +378,13 @@ platform:
   os: linux
 steps:
 - commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
+- commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
   image: alpine:3.21
@@ -382,6 +433,13 @@ platform:
   os: linux
 steps:
 - commands:
+  - apk update
+  - apk add --no-cache git
+  - go test -p 1 -timeout 20m -v  ./tests/
+  image: golang:1.24-alpine3.21
+  mirror: https://mirror.gcr.io
+  name: test
+- commands:
   - echo '[registry."docker.io"]' > buildkitd.toml
   - echo '  mirrors = ["mirror.gcr.io"]' >> buildkitd.toml
   image: alpine:3.21
@@ -424,6 +482,6 @@ trigger:
 type: docker
 ---
 kind: signature
-hmac: 6eab8ae9773b048e780db2bf9d440095eb5615d0baf8da71878069ad7124e167
+hmac: 07ac33f9298a9910aacb29ef18931cb999841f76be8a95ca210f9f3704c347f9
 
 ...

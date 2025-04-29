@@ -12,6 +12,7 @@ local Build(mirror, go, alpine, os, arch) = {
         CGO_ENABLED: "0",
         GOOS: os,
         GOARCH: arch,
+        GORACE: "halt_on_error=1"
     },
     steps: [
         {
@@ -24,6 +25,16 @@ local Build(mirror, go, alpine, os, arch) = {
                 "mkdir .bin",
                 "go build -v -pgo=auto -v -trimpath -ldflags=-buildid= -o ./.bin/go-away ./cmd/go-away",
                 "go build -v -o ./.bin/test-wasm-runtime ./cmd/test-wasm-runtime",
+            ],
+        },
+        {
+            name: "test",
+            image: "golang:" + go +"-alpine" + alpine,
+            mirror: mirror,
+            commands: [
+                "apk update",
+                "apk add --no-cache git",
+                "go test -p 1 -timeout 20m -v  ./tests/"
             ],
         },
         {
@@ -92,6 +103,16 @@ local Publish(mirror, registry, repo, secret, go, alpine, os, arch, trigger, pla
     },
     trigger: trigger,
     steps: [
+        {
+            name: "test",
+            image: "golang:" + go +"-alpine" + alpine,
+            mirror: mirror,
+            commands: [
+                "apk update",
+                "apk add --no-cache git",
+                "go test -p 1 -timeout 20m -v  ./tests/"
+            ],
+        },
         {
             name: "setup-buildkitd",
             image: "alpine:" + alpine,
