@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"time"
 )
@@ -43,6 +44,26 @@ type Bind struct {
 	TLSCertificate string `yaml:"tls-certificate"`
 	// TLSPrivateKey Alternate to TLSAcmeAutoCert. Preferred over TLSEntries if specified.
 	TLSPrivateKey string `yaml:"tls-key"`
+
+	// General TLS config
+	// TLSMinVersion TLS Minimum supported version.
+	// Default is Golang's default, at writing time it's TLS 1.2. Lowest supported is TLS 1.0
+	TLSMinVersion string `yaml:"tls-min-version"`
+
+	// TLSMaxVersion TLS Maximum supported version.
+	// Default is Golang's default, at writing time it's TLS 1.3, and is automatically increased.
+	// Lowest supported is TLS 1.2
+	TLSMaxVersion string `yaml:"tls-max-version"`
+
+	// TLSCurves List of supported TLS curve ids from Golang internals
+	// See this list https://github.com/golang/go/blob/go1.24.0/src/crypto/tls/common.go#L138-L153 for supported values
+	// Default values are chosen by Golang. It's recommended to leave the default
+	TLSCurves []tls.CurveID `yaml:"tls-curves"`
+
+	// TLSCiphers List of supported TLS ciphers from Golang internals, case sensitive. TLS 1.3 suites are not configurable.
+	// See this list https://github.com/golang/go/blob/go1.24.0/src/crypto/tls/cipher_suites.go#L56-L73 for supported values
+	// Default values are chosen by Golang. It's recommended to leave the default
+	TLSCiphers []string `yaml:"tls-ciphers"`
 
 	// ReadTimeout is the maximum duration for reading the entire
 	// request, including the body. A zero or negative value means
@@ -160,6 +181,60 @@ func (b *Bind) Server(backends map[string]http.Handler, acmeCachePath string) (*
 			"TLS enabled with multiple certificates",
 			"certificates", len(b.TLSEntries),
 		)
+	}
+
+	if tlsConfig != nil {
+		if b.TLSMinVersion != "" {
+			switch strings.NewReplacer("-", "", "_", "", " ", "", ".", "").Replace(strings.ToLower(b.TLSMinVersion)) {
+			case "13", "tls13":
+				tlsConfig.MinVersion = tls.VersionTLS13
+			case "12", "tls12":
+				tlsConfig.MinVersion = tls.VersionTLS12
+			case "11", "tls11":
+				tlsConfig.MinVersion = tls.VersionTLS11
+			case "10", "tls10":
+				tlsConfig.MinVersion = tls.VersionTLS10
+			default:
+				return nil, nil, fmt.Errorf("unsupported minimum TLS version: %s", b.TLSMinVersion)
+			}
+		}
+
+		if b.TLSMaxVersion != "" {
+			switch strings.NewReplacer("-", "", "_", "", " ", "", ".", "").Replace(strings.ToLower(b.TLSMaxVersion)) {
+			case "13", "tls13":
+				tlsConfig.MaxVersion = tls.VersionTLS13
+			case "12", "tls12":
+				tlsConfig.MaxVersion = tls.VersionTLS12
+			default:
+				return nil, nil, fmt.Errorf("unsupported maximum TLS version: %s", b.TLSMinVersion)
+			}
+		}
+
+		if len(b.TLSCiphers) > 0 {
+			for _, cipher := range b.TLSCiphers {
+				if c := func() *tls.CipherSuite {
+					for _, c := range tls.CipherSuites() {
+						if c.Name == cipher {
+							return c
+						}
+					}
+					for _, c := range tls.InsecureCipherSuites() {
+						if c.Name == cipher {
+							return c
+						}
+					}
+					return nil
+				}(); c != nil {
+					tlsConfig.CipherSuites = append(tlsConfig.CipherSuites, c.ID)
+				} else {
+					return nil, nil, fmt.Errorf("unsupported TLS cipher suite: %s", cipher)
+				}
+			}
+		}
+
+		if len(b.TLSCurves) > 0 {
+			tlsConfig.CurvePreferences = append(tlsConfig.CurvePreferences, b.TLSCurves...)
+		}
 	}
 
 	var serverHandler atomic.Pointer[http.Handler]
