@@ -17,6 +17,13 @@ import (
 	"time"
 )
 
+type TLSEntry struct {
+	// Certificate Path to the certificate file
+	Certificate string `yaml:"certificate"`
+	// Key Path to the corresponding key file
+	Key string `yaml:"key"`
+}
+
 type Bind struct {
 	Address    string `yaml:"address"`
 	Network    string `yaml:"network"`
@@ -28,9 +35,13 @@ type Bind struct {
 	// TLSAcmeAutoCert URL to ACME directory, or letsencrypt
 	TLSAcmeAutoCert string `yaml:"tls-acme-autocert"`
 
-	// TLSCertificate Alternate to TLSAcmeAutoCert
+	// TLSEntries Alternate to TLSAcmeAutoCert. Allows multiple entries with matching.
+	// Entries on this list can be live-reloaded if application implements SIGHUP handling
+	TLSEntries []TLSEntry `yaml:"tls-entries"`
+
+	// TLSCertificate Alternate to TLSAcmeAutoCert. Preferred over TLSEntries if specified.
 	TLSCertificate string `yaml:"tls-certificate"`
-	// TLSPrivateKey Alternate to TLSAcmeAutoCert
+	// TLSPrivateKey Alternate to TLSAcmeAutoCert. Preferred over TLSEntries if specified.
 	TLSPrivateKey string `yaml:"tls-key"`
 
 	// ReadTimeout is the maximum duration for reading the entire
@@ -103,6 +114,51 @@ func (b *Bind) Server(backends map[string]http.Handler, acmeCachePath string) (*
 		slog.Warn(
 			"TLS enabled",
 			"certificate", b.TLSCertificate,
+		)
+	} else if len(b.TLSEntries) > 0 {
+		tlsConfig = &tls.Config{}
+		var err error
+
+		var certificatesPtr atomic.Pointer[[]tls.Certificate]
+
+		swapTls := func() error {
+			certs := make([]tls.Certificate, 0, len(b.TLSEntries))
+			for _, entry := range b.TLSEntries {
+				cert, err := tls.LoadX509KeyPair(entry.Certificate, entry.Key)
+				if err != nil {
+					return fmt.Errorf("failed to load TLS certificate %s: %w", entry.Certificate, err)
+				}
+				certs = append(certs, cert)
+			}
+			certificatesPtr.Swap(&certs)
+			return nil
+		}
+
+		tlsConfig.GetCertificate = func(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+			certs := certificatesPtr.Load()
+
+			if certs == nil || len(*certs) == 0 {
+				panic("no certificates found")
+			}
+
+			for _, cert := range *certs {
+				if err := clientHello.SupportsCertificate(&cert); err == nil {
+					return &cert, nil
+				}
+			}
+
+			// if none match, return first
+			return &(*certs)[0], nil
+		}
+
+		err = swapTls()
+		if err != nil {
+			return nil, nil, err
+		}
+
+		slog.Warn(
+			"TLS enabled with multiple certificates",
+			"certificates", len(b.TLSEntries),
 		)
 	}
 
