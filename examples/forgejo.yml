@@ -26,7 +26,7 @@ challenges:
       # http-url: http://forgejo:3000/repo/search
       # http-url: http://forgejo:3000/notifications/new
       http-method: GET
-      http-cookie: i_like_gitea
+      http-cookie: session
       http-code: 200
       verify-probability: 0.1
 
