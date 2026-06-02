@@ -65,7 +65,7 @@ func EnsureNoOpenRedirect(redirect string) (string, error) {
 	uri.Opaque = ""
 	uri.OmitHost = true
 
-	if uri.Path != "" && !strings.HasPrefix(uri.Path, "/") {
+	if uri.Path != "" && !strings.HasPrefix(uri.Path, "/") && strings.HasPrefix(uri.Path, "//") {
 		return "", errors.New("invalid redirect path")
 	}
 
