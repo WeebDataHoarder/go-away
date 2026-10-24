@@ -400,10 +400,6 @@ type TokenChallenge struct {
 }
 
 func (d *RequestData) verifyChallengeStateCookie(cookie *http.Cookie) (TokenChallengeMap, error) {
-	cookie, err := d.r.Cookie(d.cookieName)
-	if err != nil {
-		return nil, err
-	}
 	if cookie == nil {
 		return nil, http.ErrNoCookie
 	}

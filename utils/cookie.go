@@ -18,24 +18,24 @@ func getValidHost(host string) string {
 	return ipStr
 }
 
-func SetCookie(name, value string, expiry time.Time, w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
+func getBaseCookie(name, value string, expiry time.Time, w http.ResponseWriter, r *http.Request) *http.Cookie {
+	return &http.Cookie{
 		Name:     name,
 		Value:    value,
 		Expires:  expiry,
 		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
-		Domain:   getValidHost(r.Host),
-	})
+		//Domain:   getValidHost(r.Host),
+	}
+}
+
+func SetCookie(name, value string, expiry time.Time, w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, getBaseCookie(name, value, expiry, w, r))
 }
 
 func ClearCookie(name string, w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     name,
-		Value:    "",
-		Expires:  time.Now().Add(-1 * time.Hour),
-		MaxAge:   -1,
-		SameSite: http.SameSiteLaxMode,
-		Domain:   getValidHost(r.Host),
-	})
+	base := getBaseCookie(name, "", time.Unix(0, 0), w, r)
+	base.MaxAge = -1
+
+	http.SetCookie(w, base)
 }
