@@ -237,6 +237,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -285,6 +287,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -333,6 +337,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -381,6 +387,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -429,6 +437,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -477,6 +487,8 @@ steps:
     LC_ALL: C
     PLUGIN_BUILDER_CONFIG: buildkitd.toml
     PLUGIN_BUILDER_DRIVER: docker-container
+    PLUGIN_BUILDKIT_VERSION: moby/buildkit:v0.34.1
+    PLUGIN_USE_LOADED_BUILDKIT: "false"
     SOURCE_DATE_EPOCH: 0
     TZ: UTC
   image: plugins/buildx
@@ -509,6 +521,6 @@ trigger:
 type: docker
 ---
 kind: signature
-hmac: 9a3872c0b58810924c4342c9dbd338e16da20631c9a0848e3abd2bf6773f9ba6
+hmac: 42214ec96581c8e8b57cdb5e770dbfeec14c7a656cc4887b0c8df44197ac9b28
 
 ...

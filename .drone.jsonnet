@@ -112,6 +112,8 @@ local Publish(mirror, registry, repo, secret, go, alpine, os, arch, trigger, pla
                 LC_ALL: "C",
                 PLUGIN_BUILDER_CONFIG: "buildkitd.toml",
                 PLUGIN_BUILDER_DRIVER: "docker-container",
+                PLUGIN_USE_LOADED_BUILDKIT: "false",
+                PLUGIN_BUILDKIT_VERSION: "moby/buildkit:v0.34.1",
             },
             settings: {
                   registry: registry,
